@@ -16,6 +16,15 @@ OPENAI_API_KEY="your-key"
 DART_API_KEY="your-key"
 ```
 
+## 데이터 전처리 (필수)
+'''
+python prepare_data.py
+```
+
+## stremalit 실행
+```
+streamlit run analyzeWithLLM.py
+```
 
 ## 결과화면
 
