@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+import xml.etree.ElementTree as ET
 
 # 환경 변수 로드 (.env 파일)
 load_dotenv()
@@ -17,20 +18,36 @@ if not DART_API_KEY:
 if not OPENAI_API_KEY:
     raise Exception("OPENAI_API_KEY가 설정되어 있지 않습니다. .env 파일을 확인하세요.")
 
+# CORPCODE.xml 파싱 (프로젝트 폴더에 미리 다운로드해 둘 것)
+@st.cache_data
+def load_corp_code_dict(xml_path='CORPCODE.xml'):
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+    corp_dict = {}
+    for company in root.findall('list'):
+        corp_name = company.find('corp_name').text.strip()
+        corp_code = company.find('corp_code').text.strip()
+        corp_dict[corp_name] = corp_code
+    return corp_dict
+
+corp_dict = load_corp_code_dict()
+
 def get_stock_code(user_input):
+    # 숫자 입력(고유번호) 지원
     if user_input.strip().isdigit():
         return user_input.strip()
-    mapping = {
-        "삼성전자": "00126380",
-        "현대자동차": "00164742",
-        "SK하이닉스": "00126380",  # 실제 코드 확인 필요
-        "LG전자": "00179048",
-        "카카오": "00162757"
-    }
-    if user_input in mapping:
-        return mapping[user_input]
+    # 정확히 일치하는 기업명
+    if user_input in corp_dict:
+        return corp_dict[user_input]
+    # 일부만 입력한 경우(포함 검색, 복수 결과 시 선택)
+    matches = [name for name in corp_dict if user_input in name]
+    if len(matches) == 1:
+        return corp_dict[matches[0]]
+    elif len(matches) > 1:
+        st.warning(f"여러 기업이 검색되었습니다: {matches}. 정확한 기업명을 입력하세요.")
+        raise Exception("여러 기업명이 검색됨")
     else:
-        raise Exception("회사 이름을 찾을 수 없습니다. 미리 등록된 회사명만 가능합니다.")
+        raise Exception("회사 이름을 찾을 수 없습니다. DART에 등록된 기업명인지 확인하세요.")
 
 def fetch_dart_financials_df(company_code, bsns_year="2022", reprt_code="11011"):
     base_url = "https://opendart.fss.or.kr/api"
@@ -47,10 +64,6 @@ def fetch_dart_financials_df(company_code, bsns_year="2022", reprt_code="11011")
 
     data = response.json()
     st.write("전체 API 응답:", data)
-
-    # # 여기서 정상 응답 상태 코드 검토 (사용 중인 API마다 기준이 다를 수 있음)
-    # if data.get("status") != "정상":
-    #     raise Exception("DART API 응답 오류: " + data.get("message", "Unknown error"))
 
     financial_list = data.get("list", [])
     if not financial_list:
@@ -165,8 +178,6 @@ Net_Income_Status: {Net_Income_Status}
 Free_Cash_Flow: {Free_Cash_Flow}
 Dividend_Yield: {Dividend_Yield}
 """
-
-
 
 prompt = PromptTemplate(
     input_variables=[
