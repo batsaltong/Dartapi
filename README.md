@@ -15,3 +15,17 @@ pip install -r requirements.txt
 OPENAI_API_KEY="your-key"
 DART_API_KEY="your-key"
 ```
+
+
+## 결과화면
+
+다음은 실행화면의 일부를 캡쳐한 부분입니다.
+
+(1)
+![스크린샷(95)](https://github.com/user-attachments/assets/72849861-7f07-4635-a624-990bd0d8bb2e)
+(2)
+![스크린샷(96)](https://github.com/user-attachments/assets/04a9e2f9-3153-4b37-a3c3-aae7dd890e29)
+(3)
+![스크린샷(97)](https://github.com/user-attachments/assets/4be2c118-e9f6-46b5-b88a-5729a95ff03c)
+(4)
+![스크린샷(98)](https://github.com/user-attachments/assets/7f8334ec-7e34-4537-8bfe-7d365879edb9)
