@@ -17,7 +17,7 @@ DART_API_KEY="your-key"
 ```
 
 ## 데이터 전처리 (필수)
-'''
+```
 python prepare_data.py
 ```
 
